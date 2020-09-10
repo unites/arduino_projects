@@ -1,0 +1,161 @@
+
+#include <MIDIUSB.h>
+#include <Bounce2.h>
+#include <ResponsiveAnalogRead.h>
+#include <elapsedMillis.h>
+
+ResponsiveAnalogRead analog1(A0, true);
+ResponsiveAnalogRead analog2(A1, true);
+ResponsiveAnalogRead analog3(A2, true);
+ResponsiveAnalogRead analog4(A3, true);
+ResponsiveAnalogRead analog5(A10, true);
+
+// store previously sent values, to detect changes
+int previousA0 = -1;
+int previousA1 = -1;
+int previousA2 = -1;
+int previousA3 = -1;
+int previousA4 = -1;
+
+Bounce b1= Bounce();
+Bounce b2 = Bounce();
+Bounce b3 = Bounce();
+Bounce b4 = Bounce();
+Bounce b5 = Bounce();
+Bounce b6 = Bounce();
+Bounce b7 = Bounce();
+Bounce b8 = Bounce();
+Bounce b9 = Bounce();
+Bounce b10 = Bounce();
+
+Bounce p1 = Bounce();
+Bounce p2 = Bounce();
+
+int b1p = 2;
+int b2p = 3;
+int b3p = 4;
+int b4p = 5;
+int b5p = 6;
+int b6p = 7;
+int b7p = 8;
+int b8p = 9;
+int b9p = 14;
+int b10p = 16;
+
+int p1p = 0;
+int p2p = 1;
+
+void setup() {
+  // put your setup code here, to run once:
+  b1.attach(b1p,  INPUT_PULLUP );
+  b2.attach(b2p,  INPUT_PULLUP );
+  b3.attach(b3p,  INPUT_PULLUP );
+  b4.attach(b4p,  INPUT_PULLUP );
+  b5.attach(b5p,  INPUT_PULLUP );
+  b6.attach(b6p,  INPUT_PULLUP );
+  b7.attach(b7p,  INPUT_PULLUP );
+  b8.attach(b8p,  INPUT_PULLUP );
+  b9.attach(b9p,  INPUT_PULLUP );
+  b10.attach(b10p,  INPUT_PULLUP );
+
+  b1.interval(5);
+  b2.interval(5);
+  b3.interval(5);
+  b4.interval(5);
+  b5.interval(5);
+  b6.interval(5);
+  b7.interval(5);
+  b8.interval(5);
+  b9.interval(5);
+  b10.interval(5);
+}
+
+void controlChange (byte channel, byte control, byte value) {
+  midiEventPacket_t event = {0x0B, 0xB0 | channel, control, value};
+  MidiUSB.sendMIDI(event);
+}
+
+elapsedMillis msec = 0;
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if (msec >= 20) {
+    analog1.update();
+    analog2.update();
+    analog3.update();
+    analog4.update();
+    analog5.update();
+
+    b1.update();
+    b2.update();
+    b3.update();
+    b4.update();
+    b5.update();
+    b6.update();
+    b7.update();
+    b8.update();
+    b9.update();
+    b10.update();
+
+    if ( b1.changed() ) {
+       controlChange(1, 11, b1.read());
+    }
+    if ( b2.changed() ) {
+       controlChange(1, 12, b2.read());
+    }
+    if ( b3.changed() ) {
+       controlChange(1, 13, b3.read());
+    }
+    if ( b4.changed() ) {
+       controlChange(1, 14, b4.read());
+    }
+    if ( b5.changed() ) {
+       controlChange(1, 15, b5.read());
+    }
+    if ( b6.changed() ) {
+       controlChange(1, 16, b6.read());
+    }
+    if ( b7.changed() ) {
+       controlChange(1, 17, b7.read());
+    }
+    if ( b8.changed() ) {
+       controlChange(1, 18, b8.read());
+    }
+    if ( b9.changed() ) {
+       controlChange(1, 19, b9.read());
+    }
+    if ( b10.changed() ) {
+       controlChange(1, 20, b10.read());
+    }
+    msec = 0;
+    int n0 = analog1.getValue()/8;
+    int n1 = analog2.getValue()/8;
+    int n2 = analog3.getValue()/8;
+    int n3 = analog4.getValue()/8;
+    int n4 = analog5.getValue()/8;
+    // only transmit MIDI messages if analog input changed
+    
+    if (n0 != previousA0) {
+      controlChange(1, 4, n0);
+      previousA0 = n0;
+    }
+    if (n1 != previousA1) {
+      controlChange(1, 3, n1);
+      previousA1 = n1;
+    }
+    if (n2 != previousA2) {
+      controlChange(1, 2, n2);
+      previousA2 = n2;
+    }
+    if (n3 != previousA3) {
+      controlChange(1, 1, n3);
+      previousA3 = n3;
+    }
+    if (n4 != previousA4) {
+      controlChange(1, 5, n4);
+      previousA4 = n4;
+    }
+    MidiUSB.flush();
+  }
+  // controlChange(0,10,65); //Set the value of Controller 10 on channel 0 to 65
+}
